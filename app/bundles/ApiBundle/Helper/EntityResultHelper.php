@@ -19,7 +19,7 @@ class EntityResultHelper
      * @param array<mixed>|Paginator<mixed> $results
      * @param callable|null                 $callback
      *
-     * @return array<mixed>
+     * @return array<mixed>|\ArrayObject<mixed>
      */
     public function getArray($results, $callback = null)
     {
@@ -33,6 +33,11 @@ class EntityResultHelper
             if (is_callable($callback)) {
                 $callback($entities[$key]);
             }
+        }
+
+        // solving array/object discrepancy for empty values
+        if ($this->isKeyedById($results) && empty($entities)) {
+            $entities = new \ArrayObject();
         }
 
         return $entities;
@@ -82,5 +87,15 @@ class EntityResultHelper
         }
 
         return $object[0];
+    }
+
+    /**
+     * @param array<mixed>|Paginator<int,mixed> $results
+     *
+     * @return bool
+     */
+    private function isKeyedById($results)
+    {
+        return !$results instanceof Paginator;
     }
 }
