@@ -46,7 +46,7 @@
                                         ?
                                         \Mautic\LeadBundle\Helper\FormFieldHelper::parseBooleanList($list)
                                         :
-                                        \Mautic\LeadBundle\Helper\FormFieldHelper::parseListForChoices($list);
+                                        $list;
                                     $list      = json_encode($choices);
                                     $callback  = (!empty($params['properties']['callback'])) ? $params['properties']['callback'] : '';
                                     $operators = (!empty($params['operators'])) ? $view->escape(json_encode($params['operators'])) : '{}';

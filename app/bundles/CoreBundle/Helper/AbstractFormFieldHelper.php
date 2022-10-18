@@ -132,7 +132,7 @@ abstract class AbstractFormFieldHelper
                     new ArrayListParser(),
                 ]
             ),
-            true
+            false
         );
     }
 
