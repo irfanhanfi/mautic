@@ -273,7 +273,7 @@ trait FilterTrait
                                 ?
                                 FormFieldHelper::parseBooleanList($list)
                                 :
-                                FormFieldHelper::parseList($list)
+                                FormFieldHelper::parseListForChoices($list)
                         );
                 }
 
