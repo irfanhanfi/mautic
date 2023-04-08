@@ -320,4 +320,20 @@ export default class BuilderService {
 
   //   return assetsList;
   // }
+
+  static getMjmlContent(){
+    return mjmlService.getOriginalContentMjml();
+  }
+
+  static setMjmlContent(mjml){
+    return mQuery('textarea.builder-mjml').val(mjml);
+  }
+
+  static getHtmlFromMjml(mlml){
+    return mjmlService.mjmlToHtml(mlml);;
+  }
+
+  static setHtmlContent(html){
+    return mQuery('textarea.builder-html').val(html);
+  }
 }

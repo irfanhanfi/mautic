@@ -31,6 +31,17 @@ function launchBuilderGrapesjs(formName) {
 
   // Initialize GrapesJS
   builder.initGrapesJS(formName);
+  function debounce(func, timeout = 500){
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => { func.apply(this, args); }, timeout);
+    };
+  }
+  const debounceCallback = debounce(() => updateThemePreviewHeader());
+  builder.editor.on('stop:mautic-editor-email-mjml-close', () => {
+    debounceCallback();
+  });
 }
 
 /**
@@ -53,6 +64,7 @@ function setThemeHtml(theme) {
 
       if (typeof textareaMjml !== 'undefined') {
         textareaMjml.val(response.templateMjml);
+        updateThemePreviewHeader();
       }
 
       // If MJML template, generate HTML before save
@@ -149,8 +161,42 @@ function initSelectThemeGrapesjs(parentInitSelectTheme) {
       switchBuilderButton(theme);
       switchCustomHtml(theme);
     });
+    mQuery(document).ready(function($){
+      $('#emailform_previewHeader').on('blur', function(){
+        updateThemePreviewHeader();
+      });
+    })
   }
   return childInitSelectTheme;
+}
+
+function updateThemePreviewHeader()
+{
+  const mjml = BuilderService.getMjmlContent();
+  if (!mjml) {
+    return;
+  }
+  const previewHeader = mQuery('#emailform_previewHeader').val();
+  const previewContent = `<mj-preview>${previewHeader}</mj-preview>`;
+  const previewPattern = /<mj-preview>(.*?)<\/mj-preview>/gmsi;
+  const titlePattern = /<\/mj-title>/gmsi;
+  const headPattern = /<mj-head>/gmsi;
+  const mjmlPattern = /<mjml>/gmsi;
+  let newMjml;
+  if (mjml.match(previewPattern)) {
+    newMjml = mjml.replace(previewPattern, previewContent);
+  } else if (mjml.match(titlePattern)) {
+    newMjml = mjml.replace(titlePattern, `</mj-title>${previewContent}`);
+  } else if (mjml.match(headPattern)) {
+    newMjml = mjml.replace(headPattern, `<mj-head>${previewContent}`);
+  } else if (mjml.match(mjmlPattern)) {
+    newMjml = mjml.replace(mjmlPattern, `<mjml><mj-head>${previewContent}</mj-head>`);
+  }
+  if (newMjml) {
+    const newHtml = BuilderService.getHtmlFromMjml(newMjml);
+    BuilderService.setMjmlContent(newMjml);
+    BuilderService.setHtmlContent(newHtml.html);
+  }
 }
 
 Mautic.launchBuilder = launchBuilderGrapesjs;

@@ -195,6 +195,7 @@ if (!isset($previewUrl)) {
         <div class="pr-lg pl-lg pt-md pb-md">
             <?php echo $view['form']->row($form['subject']); ?>
             <?php echo $view['form']->row($form['name']); ?>
+            <?php echo $view['form']->row($form['previewHeader']); ?>
             <?php if ($isVariant): ?>
                 <?php echo $view['form']->row($form['variantSettings']); ?>
                 <?php echo $view['form']->row($form['isPublished']); ?>

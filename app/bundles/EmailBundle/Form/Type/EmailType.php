@@ -91,6 +91,17 @@ class EmailType extends AbstractType
             ]
         );
 
+        $builder->add(
+            'previewHeader',
+            TextType::class,
+            [
+                'label'      => 'Preview header',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => ['class' => 'form-control'],
+                'required'   => false
+            ]
+        );
+
         $emojiTransformer = new EmojiToShortTransformer();
         $builder->add(
             $builder->create(

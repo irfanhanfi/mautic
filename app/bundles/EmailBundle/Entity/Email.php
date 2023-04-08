@@ -208,6 +208,11 @@ class Email extends FormEntity implements VariantEntityInterface, TranslationEnt
      */
     private $clonedId;
 
+    /**
+     * @var string
+     */
+    private $previewHeader;
+
     public function __clone()
     {
         $this->clonedId         = $this->id;
@@ -316,6 +321,8 @@ class Email extends FormEntity implements VariantEntityInterface, TranslationEnt
         $builder->addField('headers', 'json_array');
 
         $builder->addNullableField('publicPreview', Type::BOOLEAN, 'public_preview');
+
+        $builder->addNullableField('previewHeader', Type::STRING, 'preview_header');
     }
 
     public static function loadValidatorMetadata(ClassMetadata $metadata)
@@ -459,6 +466,7 @@ class Email extends FormEntity implements VariantEntityInterface, TranslationEnt
                     'dynamicContent',
                     'lists',
                     'headers',
+                    'previewHeader',
                 ]
             )
             ->build();
@@ -1213,5 +1221,26 @@ class Email extends FormEntity implements VariantEntityInterface, TranslationEnt
     public function getClonedId(): ?int
     {
         return $this->clonedId;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPreviewHeader()
+    {
+        return $this->previewHeader;
+    }
+
+    /**
+     * @param $previewHeader
+     *
+     * @return $this
+     */
+    public function setPreviewHeader($previewHeader)
+    {
+        $this->isChanged('previewHeader', $previewHeader);
+        $this->previewHeader = $previewHeader;
+
+        return $this;
     }
 }
