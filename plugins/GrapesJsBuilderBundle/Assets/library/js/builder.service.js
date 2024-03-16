@@ -219,13 +219,13 @@ export default class BuilderService {
     });
 
     this.unsetComponentVoidTypes(this.editor);
-    this.editor.setComponents(components);
+    this.editor.DomComponents.clear({ temporary: true }).addComponent(components);
 
     // Reinitialize the content after parsing MJML.
     // This can be removed once the issue with self-closing tags is resolved in grapesjs-mjml.
     // See: https://github.com/GrapesJS/mjml/issues/149
     const parsedContent = MjmlService.getEditorMjmlContent(this.editor);
-    this.editor.setComponents(parsedContent);
+    this.editor.DomComponents.clear({ temporary: true }).addComponent(parsedContent);
 
     this.editor.BlockManager.get('mj-button').set({
       content: '<mj-button href="https://">Button</mj-button>',
@@ -417,12 +417,14 @@ export default class BuilderService {
     if (richTextEditor.customRte) {
       richTextEditor.customRte.disable = (el, rte) => {
         el.contentEditable = false;
-        if(rte && rte.focusManager) {
+        if (rte && rte.focusManager) {
           rte.focusManager.blur(true);
         }
 
-        rte.destroy(true);
-      }
+        if (rte && typeof rte.destroy == 'function') {
+          rte.destroy();
+        }
+      };
     }
   }
 
