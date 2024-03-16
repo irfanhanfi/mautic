@@ -193,13 +193,13 @@ export default class BuilderService {
       },
     });
     this.unsetComponentVoidTypes(this.editor);
-    this.editor.setComponents(components);
+    this.editor.setComponents(components, { silent: 1 });
 
     // Reinitialize the content after parsing MJML.
     // This can be removed once the issue with self-closing tags is resolved in grapesjs-mjml.
     // See: https://github.com/GrapesJS/mjml/issues/149
     const parsedContent = MjmlService.getEditorMjmlContent(this.editor);
-    this.editor.setComponents(parsedContent);
+    this.editor.setComponents(parsedContent, { silent: 1 });
 
     this.editor.BlockManager.get('mj-button').set({
       content: '<mj-button href="https://">Button</mj-button>',
