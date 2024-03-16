@@ -94,6 +94,27 @@ export default class BuilderService {
    * correct mode
    */
   initGrapesJS(object) {
+    // first: add globally defined mautic-grapesjs-plugins using name as pluginId for the plugin-function
+    if (window.MauticGrapesJsPlugins) {
+      window.MauticGrapesJsPlugins.forEach((item) => {
+        let error = false;
+
+        if (!item.name) {
+          console.warn('A name is required for Mautic-GrapesJs plugins in window.MauticGrapesJsPlugins. Registration skipped!');
+          error = true;
+        }
+
+        if (typeof item.plugin !== 'function') {
+          console.warn('The Mautic-GrapesJs plugin must be a function in window.MauticGrapesJsPlugins. Registration skipped!');
+          error = true;
+        }
+
+        if (!error) {
+          grapesjs.plugins.add(item.name, item.plugin)
+        }
+      });
+    }
+
     // disable mautic global shortcuts
     Mousetrap.reset();
     if (object === 'page') {
@@ -154,13 +175,14 @@ export default class BuilderService {
       styleManager: {
         clearProperties: true, // Temp fix https://github.com/artf/grapesjs-preset-webpage/issues/27
       },
-      plugins: [grapesjswebpage, grapesjspostcss, grapesjsmautic, 'gjs-plugin-ckeditor5'],
+      plugins: [grapesjswebpage, grapesjspostcss, grapesjsmautic, 'gjs-plugin-ckeditor5', ...BuilderService.getPluginNames('page')], // second: load the plugins by their name
       pluginsOpts: {
         [grapesjswebpage]: {
           formsOpts: false,
         },
         grapesjsmautic: BuilderService.getMauticConf('page-html'),
         'gjs-plugin-ckeditor5': BuilderService.getCkeConf('page:getBuilderTokens'),
+        ...BuilderService.getPluginOptions('page'), // third: add plugin-options
       },
     });
 
@@ -185,11 +207,12 @@ export default class BuilderService {
       },
       storageManager: false,
       assetManager: this.getAssetManagerConf(),
-      plugins: [grapesjsmjml, grapesjspostcss, grapesjsmautic, 'gjs-plugin-ckeditor5'],
+      plugins: [grapesjsmjml, grapesjspostcss, grapesjsmautic, 'gjs-plugin-ckeditor5', ...BuilderService.getPluginNames('email-mjml')],
       pluginsOpts: {
         grapesjsmjml: {},
         grapesjsmautic: BuilderService.getMauticConf('email-mjml'),
         'gjs-plugin-ckeditor5': BuilderService.getCkeConf('email:getBuilderTokens'),
+        ...BuilderService.getPluginOptions('email-mjml'),
       },
     });
     this.unsetComponentVoidTypes(this.editor);
@@ -229,11 +252,12 @@ export default class BuilderService {
       },
       storageManager: false,
       assetManager: this.getAssetManagerConf(),
-      plugins: [grapesjsnewsletter, grapesjspostcss, grapesjsmautic, 'gjs-plugin-ckeditor5'],
+      plugins: [grapesjsnewsletter, grapesjspostcss, grapesjsmautic, 'gjs-plugin-ckeditor5', ...BuilderService.getPluginNames('email-html')],
       pluginsOpts: {
         grapesjsnewsletter: {},
         grapesjsmautic: BuilderService.getMauticConf('email-html'),
         'gjs-plugin-ckeditor5': BuilderService.getCkeConf('email:getBuilderTokens'),
+        ...BuilderService.getPluginOptions('email-html'),
       },
     });
 
@@ -246,6 +270,62 @@ export default class BuilderService {
     });
 
     return this.editor;
+  }
+
+  /**
+   * Return the names of dynamically added plugins
+   * @param context
+   * @returns string[]
+   */
+  static getPluginNames(context) {
+    let plugins = [];
+
+    if (window.MauticGrapesJsPlugins) {
+      window.MauticGrapesJsPlugins.forEach((item) => {
+        if (item.name) {
+          if (!item.context || !Array.isArray(item.context) || item.context.length === 0) {
+            // if no context is given, the plugin is always added
+            plugins.push(item.name);
+          } else {
+            // check if the plugin should be added for the current editor context
+            item.context.forEach((pluginContext) => {
+              if (pluginContext === context) {
+                plugins.push(item.name);
+              }
+            })
+          }
+        }
+      });
+    }
+
+    return plugins;
+  }
+
+  /**
+   * Return the options of dynamically added plugins
+   * @param context
+   * @returns object[]
+   */
+  static getPluginOptions(context) {
+    let pluginOptions = {};
+
+    if (window.MauticGrapesJsPlugins) {
+      window.MauticGrapesJsPlugins.forEach((item) => {
+        if (!item.context || !Array.isArray(item.context) || item.context.length === 0) {
+          // if no context is given, the plugin is always added
+          pluginOptions[item.name] = item.pluginOptions ?? {};
+        } else {
+          // check if the plugin should be added for the current editor context
+          item.context.forEach((pluginContext) => {
+            if (pluginContext === context) {
+              pluginOptions[item.name] = item.pluginOptions ?? {};
+            }
+          })
+        }
+      });
+    }
+
+    return pluginOptions;
   }
 
   /**
