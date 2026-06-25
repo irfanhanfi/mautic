@@ -244,31 +244,6 @@ export default (editor, opts = {}) => {
     }
   };
 
-  // Remove style-default longhand values when explicit shorthand is set
-  const cleanConflictingStyleDefaults = (component) => {
-    if (!component) return;
-
-    const attrs = component.get('attributes') || {};
-    const styleDefault = { ...(component.get('style-default') || {}) };
-
-    let changed = false;
-    Object.entries(shorthandGroups).forEach(([shorthand, members]) => {
-      if (shorthand in attrs) {
-        // Explicit shorthand is set — remove longhand from style-default
-        members.forEach((member) => {
-          if (member !== shorthand && member in styleDefault) {
-            delete styleDefault[member];
-            changed = true;
-          }
-        });
-      }
-    });
-
-    if (changed) {
-      component.set('style-default', styleDefault);
-    }
-  };
-
   const stripDefaultAttrsForTokenizedComponents = () => {
     const wrapper = editor.getWrapper?.();
     if (!wrapper) return;
@@ -277,8 +252,6 @@ export default (editor, opts = {}) => {
       const attrs = { ...(cmp.get('attributes') || {}) };
       if (attrs['mj-class']) stripDefaultAttrsForComponent(cmp);
 
-      // Clean conflicting style-defaults for ALL components (not just tokenized)
-      cleanConflictingStyleDefaults(cmp);
 
       const children = cmp.components?.();
       if (children && children.length) children.forEach((c) => walk(c));
